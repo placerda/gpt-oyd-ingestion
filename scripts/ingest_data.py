@@ -154,22 +154,25 @@ def create_search_index():
     index_client = SearchIndexClient(endpoint=f"https://{AZURE_SEARCH_SERVICE}.search.windows.net/",
                                      credential=search_creds)
     if AZURE_SEARCH_INDEX not in index_client.list_index_names():
-        index = SearchIndex(
-            name=AZURE_SEARCH_INDEX,
-            fields=[
-                SimpleField(name="id", type="Edm.String", key=True),
-                SearchableField(name="content", type="Edm.String", analyzer_name=ANALYZER_NAME),
-                SimpleField(name="title", type="Edm.String"),
-                SimpleField(name="url", type="Edm.String"), 
-                SimpleField(name="filepath", type="Edm.String", filterable=True),
-                SimpleField(name="chunk_id", type="Edm.String")                
-            ],
-            semantic_settings=SemanticSettings(
-                configurations=[SemanticConfiguration(
-                    name='default',
-                    prioritized_fields=PrioritizedFields(
-                        title_field=None, prioritized_content_fields=[SemanticField(field_name='content')]))])
-        )
+        if not VECTOR_INDEX:
+            index = SearchIndex(
+                name=AZURE_SEARCH_INDEX,
+                fields=[
+                    SimpleField(name="id", type="Edm.String", key=True),
+                    SearchableField(name="content", type="Edm.String", analyzer_name=ANALYZER_NAME),
+                    SimpleField(name="title", type="Edm.String"),
+                    SimpleField(name="url", type="Edm.String"), 
+                    SimpleField(name="filepath", type="Edm.String", filterable=True),
+                    SimpleField(name="chunk_id", type="Edm.String")                
+                ],
+                semantic_settings=SemanticSettings(
+                    configurations=[SemanticConfiguration(
+                        name='default',
+                        prioritized_fields=PrioritizedFields(
+                            title_field=None, prioritized_content_fields=[SemanticField(field_name='content')]))])
+            )
+        else:
+            pass
         if VERBOSE: print(f"[INFO]    Creating {AZURE_SEARCH_INDEX} search index")
         index_client.create_index(index)
     else:

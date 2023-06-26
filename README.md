@@ -16,4 +16,8 @@ Rename [.env.template](.env.template) to ```.env``` and fill values accordingly 
 
 In a terminal (bash) execute the following line
 
-```./ingest_data.py```
+```./data_ingestion.sh```
+
+## References
+
+Azure Cognitive Search [Vector Index](https://github.com/Azure/cognitive-search-vector-pr/)
