@@ -5,7 +5,7 @@ echo "indexing docs"
 pip install -r ./requirements.txt
 
 # update env variables in shell
-# export $(grep -v '^#' .env | xargs)
+source .env
 
 # load documents and update index
 python ./scripts/ingest_data.py

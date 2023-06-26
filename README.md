@@ -16,4 +16,4 @@ Rename [.env.template](.env.template) to ```.env``` and fill values accordingly 
 
 In a terminal (bash) execute the following line
 
-```source .env && python ./scripts/ingest_data.py```
+```./ingest_data.py```
