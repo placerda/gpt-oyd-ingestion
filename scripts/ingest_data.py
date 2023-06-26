@@ -276,3 +276,5 @@ if __name__ == "__main__":
         else:
             chunks = create_chunks(file_path)
             index_chunks(filename, chunks)
+
+    print(f"[INFO] Done processing...")            
