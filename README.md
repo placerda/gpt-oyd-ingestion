@@ -20,7 +20,7 @@ Create a data folder in the project root and add input PDFs or PNGs to it.
 
 Rename [.env.template](.env.template) to ```.env``` and fill values accordingly to your environment.
 
-To use vector search (```VECTOR_INDEX="True"```) your service needs to be this feacture activated.
+To use vector search (```VECTOR_INDEX="True"```) your service needs to be this feature activated.
 
 **3) Install Libraries**
 
