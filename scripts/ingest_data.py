@@ -32,7 +32,7 @@ INPUT_FOLDER=os.environ.get('INPUT_FOLDER')
 WORK_FOLDER='work'
 SKIP_BLOBS=True if os.environ.get('SKIP_BLOBS').lower() == 'true' else False
 VECTOR_INDEX=True if os.environ.get('VECTOR_INDEX').lower() == 'true' else False
-MAX__LENGTH=int(os.environ.get('MAX_SECTION_LENGTH'))
+MAX_SECTION_LENGTH=int(os.environ.get('MAX_SECTION_LENGTH'))
 SECTION_OVERLAP=int(os.environ.get('SECTION_OVERLAP'))
 
 VERBOSE = True
