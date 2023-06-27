@@ -41,7 +41,7 @@ VERBOSE = True
 def blob_name_from_file_page(filename, page):
     return os.path.splitext(os.path.basename(filename))[0] + f"-{page}" + ".pdf"
 
-def upload_blobs(filename):
+def upload_blob(filename):
     blob_service = BlobServiceClient(account_url=f"https://{AZURE_STORAGE_ACCOUNT}.blob.core.windows.net", credential=AZURE_STORAGE_KEY)
     blob_container = blob_service.get_container_client(AZURE_STORAGE_CONTAINER)
     if not blob_container.exists():
@@ -59,7 +59,7 @@ def upload_blobs(filename):
         my_content_settings = ContentSettings(content_type=content_type)
         blob_container.upload_blob(blob_name, data, overwrite=True, content_settings=my_content_settings)
 
-def remove_blobs(filename):
+def remove_blob(filename):
     if VERBOSE: print(f"[INFO]    Removing blobs for '{filename}'")
     blob_service = BlobServiceClient(account_url=f"https://{AZURE_STORAGE_ACCOUNT}.blob.core.windows.net", credential=AZURE_STORAGE_KEY)
     blob_container = blob_service.get_container_client(AZURE_STORAGE_CONTAINER)
@@ -91,7 +91,7 @@ def in_a_table(paragraph, tables):
                 return True
     return False
 
-def split_text(pdfs):
+def split_text(files):
 
     SENTENCE_ENDINGS = [".", "!", "?"]
     WORDS_BREAKS = [",", ";", ":", " ", "(", ")", "[", "]", "{", "}", "\t", "\n"]
@@ -101,7 +101,7 @@ def split_text(pdfs):
     if not os.path.exists("./temp"):
         os.mkdir("./temp")
 
-    for i, pdf_path in enumerate(pdfs):
+    for i, pdf_path in enumerate(files):
         pdf_filename = pdf_path.split('/')[-1]
 
         formrec_creds = AzureKeyCredential(AZURE_FORM_REC_KEY)
@@ -132,15 +132,15 @@ def split_text(pdfs):
                     section = paragraph.content
         yield(section) # last section
 
-def create_chunks(filename):
-    prefix = filename[:-4]
-    for i, section in enumerate(split_text(glob(prefix + "*.pdf"))):
+def create_chunks(file_path):
+    prefix = file_path[:-4]
+    for i, section in enumerate(split_text([file_path])):
         yield {
-            "id": f"{prefix}-{i}".split('/')[-1].replace(".", "_").replace(" ", "_"),
+            "id": f"{prefix}-chk{i}".split('/')[-1],
             "content": section,
-            "title": filename.split('/')[-1].split('.')[0],
-            "url": f"https://{AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/{AZURE_STORAGE_CONTAINER}/{filename}",            
-            "filepath": filename.split('/')[-1],
+            "title": file_path.split('/')[-1].split('.')[0],
+            "url": f"https://{AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/{AZURE_STORAGE_CONTAINER}/{file_path}",            
+            "filepath": file_path.split('/')[-1],
             "chunk_id": str(i)
         }
 
@@ -218,7 +218,7 @@ def remove_from_index(filename):
             if r.get_count() == 0:
                 break
             r = search_client.delete_documents(documents=[{ "id": d["id"] } for d in r])
-            if args.verbose: print(f"    Removed {len(r)} chunks from index")
+            if VERBOSE: print(f"    Removed {len(r)} chunks from index")
         except:
             break
         # It can take a few seconds for search results to reflect changes, so wait a bit
@@ -274,8 +274,8 @@ if __name__ == "__main__":
         if VERBOSE: print(f"[INFO] Processing '{filename}'")
         remove_from_index(filename)
         if not SKIP_BLOBS:
-            remove_blobs(filename)            
-            upload_blobs(file_path)
+            remove_blob(filename)            
+            upload_blob(file_path)
         chunks = create_chunks(file_path)
         index_chunks(filename, chunks)
 
