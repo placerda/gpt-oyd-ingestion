@@ -63,11 +63,7 @@ def remove_blobs(filename):
     blob_service = BlobServiceClient(account_url=f"https://{AZURE_STORAGE_ACCOUNT}.blob.core.windows.net", credential=AZURE_STORAGE_KEY)
     blob_container = blob_service.get_container_client(AZURE_STORAGE_CONTAINER)
     if blob_container.exists():
-        if filename == None:
-            blobs = blob_container.list_blob_names()
-        else:
-            prefix = os.path.splitext(os.path.basename(filename))[0]
-            blobs = blob_container.list_blob_names(name_starts_with=prefix)
+        blobs = blob_container.list_blob_names(filename)
         for b in blobs:
             if VERBOSE: print(f"[INFO]    Removing blob {b}")
             blob_container.delete_blob(b)
