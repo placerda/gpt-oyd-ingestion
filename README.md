@@ -12,7 +12,11 @@ Create a data folder and add input PDFs or PNGs to it.
 
 Rename [.env.template](.env.template) to ```.env``` and fill values accordingly to your environment.
 
-**3) Execute ingestion script** 
+**3) Install Libraries**
+
+```pip3 install -r ./requirements.txt```
+
+**4) Execute ingestion script** 
 
 In a terminal (bash) execute the following line
 

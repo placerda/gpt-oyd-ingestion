@@ -11,7 +11,6 @@ from azure.search.documents.indexes.models import *
 from azure.search.documents import SearchClient
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from glob import glob
-from unidecode import unidecode
 
 # load environment variables from .env file
 dotenv.load_dotenv()
@@ -154,25 +153,22 @@ def create_search_index():
     index_client = SearchIndexClient(endpoint=f"https://{AZURE_SEARCH_SERVICE}.search.windows.net/",
                                      credential=search_creds)
     if AZURE_SEARCH_INDEX not in index_client.list_index_names():
-        if not VECTOR_INDEX:
-            index = SearchIndex(
-                name=AZURE_SEARCH_INDEX,
-                fields=[
-                    SimpleField(name="id", type="Edm.String", key=True),
-                    SearchableField(name="content", type="Edm.String", analyzer_name=ANALYZER_NAME),
-                    SimpleField(name="title", type="Edm.String"),
-                    SimpleField(name="url", type="Edm.String"), 
-                    SimpleField(name="filepath", type="Edm.String", filterable=True),
-                    SimpleField(name="chunk_id", type="Edm.String")                
-                ],
-                semantic_settings=SemanticSettings(
-                    configurations=[SemanticConfiguration(
-                        name='default',
-                        prioritized_fields=PrioritizedFields(
-                            title_field=None, prioritized_content_fields=[SemanticField(field_name='content')]))])
-            )
-        else:
-            pass
+        index = SearchIndex(
+            name=AZURE_SEARCH_INDEX,
+            fields=[
+                SimpleField(name="id", type="Edm.String", key=True),
+                SearchableField(name="content", type="Edm.String", analyzer_name=ANALYZER_NAME),
+                SimpleField(name="title", type="Edm.String"),
+                SimpleField(name="url", type="Edm.String"), 
+                SimpleField(name="filepath", type="Edm.String", filterable=True),
+                SimpleField(name="chunk_id", type="Edm.String")                
+            ],
+            semantic_settings=SemanticSettings(
+                configurations=[SemanticConfiguration(
+                    name='default',
+                    prioritized_fields=PrioritizedFields(
+                        title_field=None, prioritized_content_fields=[SemanticField(field_name='content')]))])
+        )
         if VERBOSE: print(f"[INFO]    Creating {AZURE_SEARCH_INDEX} search index")
         index_client.create_index(index)
     else:
@@ -239,9 +235,7 @@ def rename_files_to_url_safe(files):
         filename = os.path.basename(file_path)
         file_extension = filename.split('.')[-1]
         filename = filename[:-len(file_extension) - 1]
-        url_safe_name = unidecode(os.path.splitext(filename)[0]) # accents
-        url_safe_name = re.sub(r'[^a-zA-Z0-9]+', '-', url_safe_name) # special chars
-        url_safe_name = re.sub(r'\s+', '-', url_safe_name) # spaces
+        url_safe_name = re.sub(r'[^a-zA-Z0-9]+', '-', filename) # special chars
         new_file_path = os.path.join(WORK_FOLDER, url_safe_name + '.' + file_extension)
         os.rename(file_path, new_file_path)
         new_files.append(new_file_path)
@@ -274,10 +268,10 @@ if __name__ == "__main__":
         if not SKIP_BLOBS:
             remove_blobs(filename)            
             upload_blobs(file_path)
-        if VECTOR_INDEX:
-            pass # TODO: add vector indexing
-        else:
-            chunks = create_chunks(file_path)
-            index_chunks(filename, chunks)
+        chunks = create_chunks(file_path)
+        index_chunks(filename, chunks)
+
+    # remove working folder
+    shutil.rmtree(WORK_FOLDER)
 
     print(f"[INFO] Done processing...")            
