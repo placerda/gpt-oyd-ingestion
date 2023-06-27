@@ -32,7 +32,7 @@ INPUT_FOLDER=os.environ.get('INPUT_FOLDER')
 WORK_FOLDER='work'
 SKIP_BLOBS=True if os.environ.get('SKIP_BLOBS').lower() == 'true' else False
 VECTOR_INDEX=True if os.environ.get('VECTOR_INDEX').lower() == 'true' else False
-MAX_SECTION_LENGTH=int(os.environ.get('MAX_SECTION_LENGTH'))
+MAX__LENGTH=int(os.environ.get('MAX_SECTION_LENGTH'))
 SECTION_OVERLAP=int(os.environ.get('SECTION_OVERLAP'))
 
 VERBOSE = True
@@ -98,7 +98,7 @@ def split_text(pdfs):
 
     SENTENCE_ENDINGS = [".", "!", "?"]
     WORDS_BREAKS = [",", ";", ":", " ", "(", ")", "[", "]", "{", "}", "\t", "\n"]
-    if VERBOSE: print(f"[INFO]    Splitting '{filename}' into sections")
+    if VERBOSE: print(f"[INFO]    Splitting '{filename}' into chunks")
 
     # make temporary directory
     if not os.path.exists("./temp"):
@@ -174,31 +174,31 @@ def create_search_index():
     else:
         if VERBOSE: print(f"[INFO]     Search index {AZURE_SEARCH_INDEX} already exists")
 
-def index_chunks(filename, sections):
-    if VERBOSE: print(f"[INFO]    Indexing sections from '{filename}' into search index '{AZURE_SEARCH_INDEX}'")
+def index_chunks(filename, chunks):
+    if VERBOSE: print(f"[INFO]    Indexing chunks from '{filename}' into search index '{AZURE_SEARCH_INDEX}'")
     search_creds = AzureKeyCredential(AZURE_SEARCH_KEY)
     search_client = SearchClient(endpoint=f"https://{AZURE_SEARCH_SERVICE}.search.windows.net/",
                                     index_name=AZURE_SEARCH_INDEX,
                                     credential=search_creds)
     i = 0
     batch = []
-    for s in sections:
+    for s in chunks:
         batch.append(s)
         i += 1
         if i % 1000 == 0:
             print("indexing batch") 
             results = search_client.index_documents(batch=batch)
             succeeded = sum([1 for r in results if r.succeeded])
-            if VERBOSE: print(f"[INFO]    Indexed {len(results)} sections, {succeeded} succeeded")
+            if VERBOSE: print(f"[INFO]    Indexed {len(results)} chunks, {succeeded} succeeded")
             batch = []
 
     if len(batch) > 0:
         results = search_client.upload_documents(documents=batch)
         succeeded = sum([1 for r in results if r.succeeded])
-        if VERBOSE: print(f"[INFO]    Indexed {len(results)} sections, {succeeded} succeeded")
+        if VERBOSE: print(f"[INFO]    Indexed {len(results)} chunks, {succeeded} succeeded")
 
 def remove_from_index(filename):
-    if VERBOSE: print(f"[INFO]    Removing sections from '{filename}' from search index '{AZURE_SEARCH_INDEX}'")
+    if VERBOSE: print(f"[INFO]    Removing chunks from '{filename}' from search index '{AZURE_SEARCH_INDEX}'")
     search_creds = AzureKeyCredential(AZURE_SEARCH_KEY)
     search_client = SearchClient(endpoint=f"https://{AZURE_SEARCH_SERVICE}.search.windows.net/",
                                     index_name=AZURE_SEARCH_INDEX,
@@ -210,7 +210,7 @@ def remove_from_index(filename):
             if r.get_count() == 0:
                 break
             r = search_client.delete_documents(documents=[{ "id": d["id"] } for d in r])
-            if args.verbose: print(f"    Removed {len(r)} sections from index")
+            if args.verbose: print(f"    Removed {len(r)} chunks from index")
         except:
             break
         # It can take a few seconds for search results to reflect changes, so wait a bit
