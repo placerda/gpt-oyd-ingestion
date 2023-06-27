@@ -4,6 +4,7 @@ import html
 import re
 import shutil
 import time
+from azure.core.exceptions import ServiceRequestError
 from azure.core.credentials import AzureKeyCredential
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from azure.search.documents.indexes import SearchIndexClient
@@ -189,9 +190,20 @@ def index_chunks(filename, chunks):
             batch = []
 
     if len(batch) > 0:
-        results = search_client.upload_documents(documents=batch)
-        succeeded = sum([1 for r in results if r.succeeded])
-        if VERBOSE: print(f"[INFO]    Indexed {len(results)} chunks, {succeeded} succeeded")
+        try:
+            results = search_client.upload_documents(documents=batch)
+            succeeded = sum([1 for r in results if r.succeeded])
+            if VERBOSE: print(f"[INFO]    Indexed {len(results)} chunks, {succeeded} succeeded")            
+        except azure.core.exceptions.ServiceRequestError as e:
+            print(f"[ERROR]    Error. Retrying in 15 sec... {e}")
+            time.sleep(15)
+            try: 
+                results = search_client.upload_documents(documents=batch)
+                succeeded = sum([1 for r in results if r.succeeded])
+                if VERBOSE: print(f"[INFO]    Indexed {len(results)} chunks, {succeeded} succeeded")
+            except Exception as e:
+                print(f"[ERROR]    Error.{e}")
+
 
 def remove_from_index(filename):
     if VERBOSE: print(f"[INFO]    Removing chunks from '{filename}' from search index '{AZURE_SEARCH_INDEX}'")
