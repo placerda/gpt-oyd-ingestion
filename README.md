@@ -1,10 +1,18 @@
 # gpt on your data ingestion
 
-## Data ingestion
+## Pre-reqs
+
+- Cognitive Search Service
+- Form Recognizer Service
+- Azure Storage Account
+- Input data in pdf or png format
+- Python 3
+
+## Quick start
 
 **1) Copy input data to a folder**
 
-Create a data folder and add input PDFs or PNGs to it.
+Create a data folder in the project root and add input PDFs or PNGs to it.
 
 ```data/```
 
@@ -12,9 +20,16 @@ Create a data folder and add input PDFs or PNGs to it.
 
 Rename [.env.template](.env.template) to ```.env``` and fill values accordingly to your environment.
 
+To use vector search (```VECTOR_INDEX="True"```) your service needs to be this feacture activated.
+
 **3) Install Libraries**
 
 ```pip3 install -r ./requirements.txt```
+
+To use vector search you need to connect to [Azure SDK Python Dev Feed](https://dev.azure.com/azure-sdk/public/_artifacts/feed/azure-sdk-for-python/connect/pip) and run:
+
+```pip3 install -r ./requirements.dev.txt```
+
 
 **4) Execute ingestion script** 
 
