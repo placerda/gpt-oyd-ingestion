@@ -5,8 +5,8 @@
 - Cognitive Search Service
 - Form Recognizer Service
 - Azure Storage Account
+- Python and PIP 3
 - Input data in pdf or png format
-- Python 3
 
 ## Quick start
 
